@@ -1,0 +1,611 @@
+{
+  "name": "WhatsApp Voice",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        112,
+        -16
+      ],
+      "id": "4347373f-ab28-44ce-8447-d49f52b692e9",
+      "name": "WhatsApp Trigger",
+      "webhookId": "4d3032d2-2e12-4eec-9ded-c34b21f2fd79",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "1TsP9FKnqc3krATy",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.input }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "97b0dba4-ed6e-43b5-9a43-12eb74d14dc7",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        864,
+        272
+      ],
+      "id": "95564b09-3f5c-41dc-96db-d7038f84c438",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "v1aNtjBTbfVqtezA",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "775208492334837",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        16
+      ],
+      "id": "6887519b-3417-4879-a4f2-af5ae458bdb1",
+      "name": "Send message",
+      "webhookId": "91b76b6b-e039-4af6-be46-69d38cdd497e",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "kFCCr2lYImb1cFyO",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "12332322232",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1072,
+        208
+      ],
+      "id": "2df52d8c-2c50-4f53-a0d1-701cfbf60075",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "cityName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('City', ``, 'string') }}",
+        "language": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Language', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.openWeatherMapTool",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        288
+      ],
+      "id": "c74d5755-85a0-4787-85cd-985a1d374267",
+      "name": "OpenWeatherMap",
+      "credentials": {
+        "openWeatherMapApi": {
+          "id": "IqBVKfQ90bPzsy4y",
+          "name": "OpenWeatherMap account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "mediaUrlGet",
+        "mediaGetId": "={{ $('WhatsApp Trigger').item.json.messages[0].audio.id }}"
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        320,
+        -304
+      ],
+      "id": "04db17b9-fbf2-4f3c-8f63-4531d71345f4",
+      "name": "Download media",
+      "webhookId": "3656930e-6bdf-4ac5-972f-c021b7312499",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "kFCCr2lYImb1cFyO",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        736,
+        -304
+      ],
+      "id": "cc31c565-a3ac-4119-ba8a-0ffc3603c083",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "openAiApi": {
+          "id": "smb36YjJ8Bu6Al0K",
+          "name": "Test OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json['Is Voice'] }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "80007989-42e1-4ab3-8b67-0b1b319ac4be"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Is Voice"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "2cfc28fb-212e-48d9-a325-92e1eeede5b3",
+                    "leftValue": "={{ $json['Is Voice'] }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "false",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Is Text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        592,
+        -16
+      ],
+      "id": "a17c8fb0-f314-4479-9caa-5ef5a316212d",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Is Voice?').item.json['Is Voice'] }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "0bf1c27b-9050-4cb7-bf3f-18270aff6fb1"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Is Voice"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3140af75-a3ff-43e0-9139-b3d3e08c360e",
+                    "leftValue": "={{ $('Is Voice?').item.json['Is Voice'] }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "false",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Is Text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1392,
+        0
+      ],
+      "id": "b1f0cbbd-cb41-48d4-bfe2-64b8b9f4940e",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "input": "={{ $json.output }}",
+        "options": {
+          "response_format": "opus"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1392,
+        -304
+      ],
+      "id": "51a88d13-332a-4112-83e9-74b35de6998b",
+      "name": "Generate audio",
+      "credentials": {
+        "openAiApi": {
+          "id": "smb36YjJ8Bu6Al0K",
+          "name": "Test OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "775208492334837",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+        "messageType": "audio",
+        "mediaPath": "useMedian8n",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        2032,
+        -304
+      ],
+      "id": "724d50ed-df23-43db-9548-58171b8e673d",
+      "name": "Send message2",
+      "webhookId": "91b76b6b-e039-4af6-be46-69d38cdd497e",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "kFCCr2lYImb1cFyO",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        528,
+        -304
+      ],
+      "id": "ca374e7a-04d2-451d-a4d6-243df72f9a2b",
+      "name": "Download Audio File",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "kFCCr2lYImb1cFyO",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e56544fa-61e4-4c78-be28-1aef85059cfe",
+              "name": "Is Voice",
+              "value": "={{!! $json.messages[0].audio }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        384,
+        -16
+      ],
+      "id": "ae206f83-9bf5-4203-8726-ef681a4127d4",
+      "name": "Is Voice?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "45e9fb52-9931-4326-8c2e-d3ab26897164",
+              "name": "input",
+              "value": "={{ $json.text }}{{ $('WhatsApp Trigger').item.json.messages[0].text.body }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        800,
+        0
+      ],
+      "id": "d212ff01-9321-44b5-9f44-e6b9a3ef1730",
+      "name": "Agent Input"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Assumes the incoming binary is on property \"data\"\n// e.g. your previous node produced items like: { binary: { data: { data: <base64>, fileName: 'x.opus', mimeType: 'audio/ogg' } } }\n\nconst item = $input.first();\nconst bin = item.binary?.data;\nif (!bin) {\n  throw new Error('No binary found on property \"data\".');\n}\n\n// Keep the raw bytes as-is; just fix the name + mime\nconst originalName = bin.fileName || 'voice';\nconst newName = originalName.toLowerCase().endsWith('.ogg')\n  ? originalName\n  : (originalName.replace(/\\.(opus|mp3|wav)$/i, '') + '.ogg');\n\nreturn [{\n  json: {}, // you can pass through item.json if you want\n  binary: {\n    data: {\n      // IMPORTANT: keep the actual file bytes (base64) untouched\n      data: bin.data, \n      fileName: newName,\n      mimeType: 'audio/ogg; codecs=opus'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        -304
+      ],
+      "id": "8a17a091-27e6-410f-80c6-539bf52f8517",
+      "name": "Convert Format",
+      "disabled": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Is Voice?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenWeatherMap": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download media": {
+      "main": [
+        [
+          {
+            "node": "Download Audio File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "Agent Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Download media",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agent Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Generate audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate audio": {
+      "main": [
+        [
+          {
+            "node": "Convert Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Audio File": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Voice?": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent Input": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Format": {
+      "main": [
+        [
+          {
+            "node": "Send message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e74b1167-8cb0-42ed-9e80-c7325decbde8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "45b0405b1f07eaf385b90bc15a028abff5aeb76441e1bf2e441a789f87e150ed"
+  },
+  "id": "GKz9wMDGUfQnzw4O",
+  "tags": []
+}
