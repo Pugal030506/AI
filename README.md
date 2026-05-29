@@ -1,2 +1,472 @@
-# AI
-# AI
+# WhatsApp AI Voice & Text Assistant using n8n
+
+## Overview
+
+This project is an AI-powered WhatsApp Assistant built using **n8n**, **OpenAI**, **OpenRouter**, and the **WhatsApp Cloud API**.
+
+The workflow can:
+
+* Receive WhatsApp messages
+* Detect whether the message is:
+
+  * Voice message
+  * Text message
+* Transcribe voice messages into text
+* Send user input to an AI Agent
+* Generate intelligent responses
+* Reply back either:
+
+  * As text
+  * Or as AI-generated voice audio
+
+This workflow creates a complete conversational AI assistant inside WhatsApp.
+
+---
+
+# Main Features
+
+## 1. WhatsApp Message Trigger
+
+The workflow starts using:
+
+* **WhatsApp Trigger Node**
+
+It listens for incoming WhatsApp messages in real-time.
+
+Supported message types:
+
+* Text messages
+* Voice/audio messages
+
+---
+
+# Workflow Architecture
+
+## Step 1 — Receive Message
+
+### Node:
+
+`WhatsApp Trigger`
+
+Purpose:
+
+* Captures incoming WhatsApp messages
+* Extracts sender details
+* Reads message content
+
+---
+
+## Step 2 — Detect Voice or Text
+
+### Node:
+
+`Is Voice?`
+
+This node checks:
+
+```js
+!! $json.messages[0].audio
+```
+
+If audio exists:
+
+* Message is treated as Voice
+
+Otherwise:
+
+* Message is treated as Text
+
+---
+
+## Step 3 — Route using Switch Node
+
+### Node:
+
+`Switch`
+
+Routes workflow into two paths:
+
+### Voice Path
+
+* Downloads audio
+* Transcribes audio
+* Sends transcript to AI
+
+### Text Path
+
+* Directly sends text to AI
+
+---
+
+# Voice Message Processing
+
+## Step 4 — Download Voice Media
+
+### Node:
+
+`Download media`
+
+Uses WhatsApp API to get media URL from:
+
+```json
+messages[0].audio.id
+```
+
+---
+
+## Step 5 — Download Actual Audio File
+
+### Node:
+
+`Download Audio File`
+
+Downloads the binary audio content from WhatsApp servers.
+
+Authentication:
+
+* WhatsApp API Credentials
+
+---
+
+## Step 6 — Speech-to-Text
+
+### Node:
+
+`Transcribe a recording`
+
+Uses OpenAI Audio Transcription API.
+
+Purpose:
+
+* Converts voice message into text
+
+This allows the AI Agent to understand spoken input.
+
+---
+
+# Text Input Preparation
+
+## Step 7 — Agent Input
+
+### Node:
+
+`Agent Input`
+
+Creates unified input for both:
+
+* Voice transcript
+* Text message
+
+Expression used:
+
+```js
+{{ $json.text }}{{ $('WhatsApp Trigger').item.json.messages[0].text.body }}
+```
+
+This ensures:
+
+* Same AI pipeline works for both text and voice.
+
+---
+
+# AI Processing
+
+## Step 8 — AI Agent
+
+### Node:
+
+`AI Agent`
+
+Core intelligence layer of the workflow.
+
+Responsibilities:
+
+* Understand user queries
+* Generate conversational replies
+* Use connected tools
+* Maintain memory context
+
+---
+
+# AI Model
+
+## Step 9 — OpenRouter Chat Model
+
+### Node:
+
+`OpenRouter Chat Model`
+
+Model Used:
+
+```txt
+openai/gpt-4o-mini
+```
+
+Purpose:
+
+* Fast AI response generation
+* Cost-efficient inference
+* Natural conversation handling
+
+---
+
+# Memory System
+
+## Step 10 — Simple Memory
+
+### Node:
+
+`Simple Memory`
+
+Type:
+
+* Buffer Window Memory
+
+Configuration:
+
+* Context window length: 10
+
+Purpose:
+
+* Maintains short-term conversation history
+* Makes replies context-aware
+
+Current Session Key:
+
+```txt
+12332322232
+```
+
+---
+
+# External AI Tool Integration
+
+## Step 11 — OpenWeatherMap Tool
+
+### Node:
+
+`OpenWeatherMap`
+
+Allows AI Agent to:
+
+* Fetch weather information dynamically
+
+AI can answer:
+
+* Current weather
+* Temperature
+* City forecasts
+
+Inputs:
+
+* City Name
+* Language
+
+---
+
+# Response Handling
+
+## Step 12 — Decide Response Type
+
+### Node:
+
+`Switch1`
+
+Checks whether original user input was:
+
+* Voice
+* Text
+
+---
+
+# Text Response Flow
+
+If original message was text:
+
+### Node:
+
+`Send message`
+
+Sends AI-generated response as:
+
+* WhatsApp text message
+
+---
+
+# Voice Response Flow
+
+If original message was voice:
+
+## Step 13 — Generate AI Voice
+
+### Node:
+
+`Generate audio`
+
+Uses OpenAI Text-to-Speech.
+
+Converts:
+
+* AI text response
+  → Into audio speech
+
+Output Format:
+
+```txt
+opus
+```
+
+---
+
+## Step 14 — Convert Audio Format
+
+### Node:
+
+`Convert Format`
+
+Purpose:
+
+* Converts output into WhatsApp-compatible `.ogg opus` format
+
+Actions:
+
+* Preserves binary audio
+* Fixes filename extension
+* Sets correct MIME type
+
+MIME:
+
+```txt
+audio/ogg; codecs=opus
+```
+
+---
+
+## Step 15 — Send Voice Reply
+
+### Node:
+
+`Send message2`
+
+Sends generated voice reply back to WhatsApp user.
+
+Message Type:
+
+* Audio
+
+---
+
+# Technologies Used
+
+## Automation Platform
+
+* n8n
+
+## AI Services
+
+* OpenAI
+* OpenRouter
+
+## Messaging
+
+* WhatsApp Cloud API
+
+## AI Capabilities
+
+* Speech-to-Text
+* Text Generation
+* Text-to-Speech
+
+## External APIs
+
+* OpenWeatherMap API
+
+---
+
+# Key Capabilities
+
+✅ WhatsApp automation
+✅ Voice assistant support
+✅ AI conversation memory
+✅ Speech recognition
+✅ AI voice reply
+✅ Multi-modal interaction
+✅ Tool calling support
+✅ Real-time AI responses
+
+---
+
+# Use Cases
+
+This project can be used for:
+
+* AI customer support bot
+* Personal AI assistant
+* WhatsApp voice chatbot
+* Business automation assistant
+* AI helpdesk
+* Smart FAQ assistant
+* Weather assistant
+* Voice-enabled conversational AI
+
+---
+
+# Workflow Logic Summary
+
+```txt
+WhatsApp Message
+        ↓
+Detect Voice or Text
+        ↓
+If Voice:
+    Download Audio
+    → Transcribe Speech
+Else:
+    Read Text Directly
+        ↓
+Prepare AI Input
+        ↓
+AI Agent Processing
+        ↓
+Generate AI Response
+        ↓
+If Original Input was Voice:
+    Convert Response to Audio
+    → Send Voice Reply
+Else:
+    Send Text Reply
+```
+
+---
+
+# Future Improvements
+
+Possible enhancements:
+
+* Multi-language support
+* Database memory
+* User authentication
+* RAG integration
+* Custom knowledge base
+* Voice cloning
+* Sentiment analysis
+* Function calling tools
+* CRM integration
+* Appointment booking
+* AI analytics dashboard
+
+---
+
+# Conclusion
+
+This project demonstrates a complete AI-powered WhatsApp automation system capable of handling both text and voice interactions intelligently using modern LLMs and automation workflows.
+
+The workflow combines:
+
+* Conversational AI
+* Voice AI
+* Real-time messaging
+* Context memory
+* External tools
+
+into a single scalable automation architecture using n8n.
