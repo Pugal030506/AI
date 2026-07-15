@@ -1,5 +1,10 @@
 # WhatsApp AI Voice & Text Assistant using n8n (AWS Hosted)
 
+
+<img width="1919" height="951" alt="Screenshot 2026-07-13 144727" src="https://github.com/user-attachments/assets/aa02a43f-7e8c-4502-8f13-732751a8ccb6" />
+
+
+
 ## Overview
 
 This project is an AI-powered WhatsApp Assistant hosted on **AWS** using **n8n**, **OpenAI**, **OpenRouter**, and the **WhatsApp Cloud API**.
@@ -497,6 +502,3 @@ It combines:
 * Cloud scalability
 
 into a production-ready intelligent communication system.
-
-<img width="1919" height="951" alt="Screenshot 2026-07-13 144727" src="https://github.com/user-attachments/assets/aa02a43f-7e8c-4502-8f13-732751a8ccb6" />
-
